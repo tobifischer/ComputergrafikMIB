@@ -12,15 +12,46 @@ using Fusee.Engine.GUI;
 using System.Collections.Generic;
 using System.Linq;
 
+
 namespace FuseeApp
 {
     public class FirstSteps : RenderCanvas
     {
+
+
+        private SceneContainer _scene;
+        private SceneRendererForward _sceneRenderer;
+
+
         // Init is called on startup. 
         public override void Init()
         {
-            // Set the clear color for the backbuffer to light green (intensities in R, G, B, A).
-            RC.ClearColor = new float4(0.7f, 1.0f, 0.5f, 1.0f);
+           // Set the clear color for the backbuffer to white (100% intentsity in all color channels R, G, B, A).
+      RC.ClearColor = new float4(0.7f, 1, 0.5f, 1);
+
+      // Create a scene with a cube
+      // The three components: one XForm, one Shader and the Mesh
+      var cubeTransform = new TransformComponent {Scale = new float3(1, 1, 1), Translation = new float3(0, 0, 50)};
+      var cubeShader = new ShaderEffectComponent
+      { 
+          Effect = SimpleMeshes.MakeShaderEffect(new float3 (0, 0, 1), new float3 (1, 1, 1),  4)
+      };
+      var cubeMesh = SimpleMeshes.CreateCuboid(new float3(10, 10, 10));
+
+      // Assemble the cube node containing the three components
+      var cubeNode = new SceneNodeContainer();
+      cubeNode.Components = new List<SceneComponentContainer>();
+      cubeNode.Components.Add(cubeTransform);
+      cubeNode.Components.Add(cubeShader);
+      cubeNode.Components.Add(cubeMesh);
+
+      // Create the scene containing the cube as the only object
+      _scene = new SceneContainer();
+      _scene.Children = new List<SceneNodeContainer>();
+      _scene.Children.Add(cubeNode);
+
+      // Create a scene renderer holding the scene above
+      _sceneRenderer = new SceneRendererForward(_scene);
         }
 
         // RenderAFrame is called once a frame
@@ -30,6 +61,8 @@ namespace FuseeApp
 
             // Clear the backbuffer
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
+
+            _sceneRenderer.Render(RC);
 
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
